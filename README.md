@@ -22,6 +22,9 @@
 ## Usage
 
 ```bash
+sudo chmod +x Captain.py
+```
+```bash
 sudo python3 Captain.py
 ```
 
