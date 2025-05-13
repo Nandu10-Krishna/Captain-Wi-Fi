@@ -83,12 +83,33 @@ def get_handshake(mon_card, bssid, channel):
     print(f"[+] Handshake saved to {capfile}")
     return capfile
 
+def ensure_wordlist_exists(path):
+    if os.path.isfile(path):
+        return path
+    elif os.path.isfile(path + ".gz"):
+        print("[*] Wordlist is gzipped. Unzipping now...")
+        subprocess.run(['gunzip', path + ".gz"])
+        return path
+    else:
+        return None
+
 def crack_handshake(capfile):
-    wordlist = input("Path to wordlist? [Default: rockyou.txt]: ").strip()
+    print("\nChoose a wordlist option:")
+print("1. Use default rockyou.txt")
+print("2. Enter custom path")
+choice = input("Select [1 or 2]: ").strip()"
+if choice == "1":
+    wordlist = "/usr/share/wordlists/rockyou.txt"
+elif choice == "2":
+    wordlist = input("Enter full path to your wordlist: ").strip()
+else:
+    print("[-] Invalid option. Using default rockyou.txt")
+    wordlist = "/usr/share/wordlists/rockyou.txt"
     if not wordlist:
         wordlist = "/usr/share/wordlists/rockyou.txt"
 
-    if not os.path.isfile(wordlist):
+    wordlist = ensure_wordlist_exists(wordlist)
+    if not wordlist or not os.path.isfile(wordlist):
         print("[-] Wordlist file not found!")
         return
 
