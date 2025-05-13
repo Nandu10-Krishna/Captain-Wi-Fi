@@ -1,6 +1,4 @@
-# Updated version of Captain.py with improved monitor mode detection and fallback
-
-updated_captain_py = """#!/usr/bin/env python3
+#!/usr/bin/env python3
 import subprocess
 import re
 import os
@@ -17,19 +15,19 @@ def display_intro():
 ##################################################
 '''
     print(intro_message)
-    print("Hacking is an art — use your skills ethically!\\n")
+    print("Hacking is an art — use your skills ethically!\n")
 
 def get_wifi_cards():
     print("[*] Scanning for WiFi cards...")
     result = subprocess.run(['iwconfig'], stdout=subprocess.PIPE, text=True)
-    cards = re.findall(r'^(\\w+)\\s+IEEE 802.11', result.stdout, re.M)
+    cards = re.findall(r'^(\w+)\s+IEEE 802.11', result.stdout, re.M)
     if not cards:
         print("[!] No compatible WiFi cards auto-detected.")
         cards = ['wlan0']  # Manual fallback
     return cards
 
 def pick_card(cards):
-    print("\\nAvailable WiFi Cards:")
+    print("\nAvailable WiFi Cards:")
     for i, card in enumerate(cards):
         print(f"{i}: {card}")
     while True:
@@ -47,7 +45,7 @@ def start_monitor_mode(card):
     time.sleep(2)
 
     out = subprocess.run(['iwconfig'], stdout=subprocess.PIPE, text=True).stdout
-    matches = re.findall(r'^(\\w+).*Mode:Monitor', out, re.M)
+    matches = re.findall(r'^(\w+).*Mode:Monitor', out, re.M)
 
     if matches:
         print(f"[+] Monitor mode enabled on: {matches[0]}")
@@ -61,7 +59,7 @@ def scan_wifi(mon_card):
     try:
         subprocess.run(['airodump-ng', mon_card])
     except KeyboardInterrupt:
-        print("\\n[*] Scan interrupted.")
+        print("\n[*] Scan interrupted.")
 
 def get_handshake(mon_card, bssid, channel):
     folder = "handshakes"
@@ -117,10 +115,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-"""
-
-# Write to updated file
-with open("/mnt/data/Captain.py", "w") as f:
-    f.write(updated_captain_py)
-
-"/mnt/data/Captain.py"
