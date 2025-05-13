@@ -95,17 +95,15 @@ def ensure_wordlist_exists(path):
 
 def crack_handshake(capfile):
     print("\nChoose a wordlist option:")
-print("1. Use default rockyou.txt")
-print("2. Enter custom path")
-choice = input("Select [1 or 2]: ").strip()"
-if choice == "1":
-    wordlist = "/usr/share/wordlists/rockyou.txt"
-elif choice == "2":
-    wordlist = input("Enter full path to your wordlist: ").strip()
-else:
-    print("[-] Invalid option. Using default rockyou.txt")
-    wordlist = "/usr/share/wordlists/rockyou.txt"
-    if not wordlist:
+    print("1. Use default rockyou.txt")
+    print("2. Enter custom path")
+    choice = input("Select [1 or 2]: ").strip()
+    if choice == "1":
+        wordlist = "/usr/share/wordlists/rockyou.txt"
+    elif choice == "2":
+        wordlist = input("Enter full path to your wordlist: ").strip()
+    else:
+        print("[-] Invalid option. Using default rockyou.txt")
         wordlist = "/usr/share/wordlists/rockyou.txt"
 
     wordlist = ensure_wordlist_exists(wordlist)
