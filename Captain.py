@@ -5,17 +5,35 @@ import os
 import time
 import sys
 
+import shutil
+
 def display_intro():
-    intro_message = '''
-##################################################
-#                 Captain Cracker                #
-#           Ethical WiFi Testing Tool            #
-#              Author: Nandu10                   #
-#  LinkedIn: https://linkedin.com/in/nandu-krishna-  #
-##################################################
-'''
-    print(intro_message)
-    print("Hacking is an art — use your skills ethically!\n")
+    terminal_width = shutil.get_terminal_size().columns  # Get current terminal width
+    ascii_art = r"""
+    ____            _        _        __        ___       _____ _    ____                _              
+   / ___|__ _ _ __ | |_ __ _(_)_ __   \ \      / (_)     |  ___(_)  / ___|_ __ __ _  ___| | _____ _ __  
+  | |   / _` | '_ \| __/ _` | | '_ \   \ \ /\ / /| |_____| |_  | | | |   | '__/ _` |/ __| |/ / _ \ '__| 
+  | |__| (_| | |_) | || (_| | | | | |   \ V  V / | |_____|  _| | | | |___| | | (_| | (__|   <  __/ |    
+   \____\__,_| .__/ \__\__,_|_|_| |_|    \_/\_/  |_|     |_|   |_|  \____|_|  \__,_|\___|_|\_\___|_|    
+             |_|                                                                                         
+    """
+
+    intro_text = """
+                               ############################################################
+                               #                  Captain Wi-Fi Cracker                  #
+                               #         Ethical WiFi Penetration Testing Tool           #
+                               #                      Author: Nandu10                    #
+                               #  LinkedIn: https://linkedin.com/in/nandu-krishna-       #
+                               ############################################################
+
+                             Hacking is an art — use your skills ethically!
+    """
+
+    # Center the ASCII art and text
+    print(ascii_art.center(terminal_width))
+    print(intro_text.center(terminal_width))
+
+
 
 def get_wifi_cards():
     print("[*] Scanning for WiFi cards...")
