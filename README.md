@@ -1,6 +1,6 @@
 # Captain
 
-**Captain** is a Python-based Wi-Fi password cracking automation tool built using `aircrack-ng`, `airodump-ng`, and `aireplay-ng`.
+**Captain-Wi-Fi** is a Python-based Wi-Fi password cracking automation tool built using `aircrack-ng`, `airodump-ng`, and `aireplay-ng`.
 
 > ⚠️ For educational and authorized penetration testing purposes only.
 
