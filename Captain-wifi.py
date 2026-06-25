@@ -19,10 +19,10 @@ def display_intro():
 
     intro_text = """
                                ############################################################
-                               #                  Captain Wi-Fi Cracker                  #
-                               #         Ethical WiFi Penetration Testing Tool           #
-                               #                      Author: Nandu10                    #
-                               #  LinkedIn: https://linkedin.com/in/nandu-krishna-       #
+                               #                  Captain Wi-Fi Cracker                   #
+                               #         Ethical WiFi Penetration Testing Tool            #
+                               #                      Author: Nandu10                     #
+                               #  LinkedIn: https://linkedin.com/in/nandu-krishna-        #
                                ############################################################
 
                              Hacking is an art — use your skills ethically!
