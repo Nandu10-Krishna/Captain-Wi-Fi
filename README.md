@@ -22,10 +22,10 @@
 ## Usage
 
 ```bash
-sudo chmod +x Captain.py
+sudo chmod +x Captain-wifi.py
 ```
 ```bash
-sudo python3 Captain.py
+sudo python3 Captain-wifi.py
 ```
 
 ## Legal Disclaimer
